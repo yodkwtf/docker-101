@@ -162,9 +162,9 @@ RUN npm install
 EXPOSE 5000
 ```
 
-Here `EXPOSE` is used to expose the port. So this will expose port 5000. This is the port on which our application will be running. This is the port that we'll use to access our application.
+Here `EXPOSE` is used to expose the port. So this will expose port 5000. This will be the port inside the container and not on the host operating system.
 
-This is an optional step. If we run our app from the command line, we don't have to expose the port. But if we want to access our app from the browser, we have to expose the port.
+This is an optional step. If we run our app from the command line, we don't have to expose the port.
 
 #### Step 6: Specify the startup command
 
@@ -213,3 +213,82 @@ node_modules
 ```
 
 If we don't specify the `.dockerignore` file, Docker will copy all the files and folders into the image. This will increase the size of the image, the time it takes to build the image, and may occasionally overwrite node_modules from the system's to the container's.
+
+## Starting and Stopping Containers
+
+We can run the docker image to create a container out of it. It can either be done using Docker Desktop or the command line.
+
+### Docker Desktop
+
+While running the image from Docker Desktop, we get some options in the GUI to set the _Container Name_, _Port Mapping_, _Environment Variables_, etc. We can also set these options using the command line.
+
+> Docker allows us to map a port from local host to the one running inside the container. So if we expose port 5000 inside the container, we can map it to port 8000 on the local host. This will allow us to access the application running inside the container from the browser on port 8000.
+
+_Note: We can only map a port that is exposed inside the container. So basically, we can only do it if we have specified the `EXPOSE` command in the Dockerfile._
+
+### Command Line
+
+#### Getting the image name
+
+To run any image, we need its name or id. We can get the name of the image using the following command:
+
+```bash
+docker images
+```
+
+This will list all the images. We can get the name of the image from here.
+
+#### Running the image
+
+To run the image, we can use the following command:
+
+```bash
+docker run --name <container-name> -p <host-port>:<container-port> -d -e <environment-variables> <image-name>
+# docker run --name my-container -p 8000:5000 -d -e PORT=5000 <image-name>
+```
+
+Here `docker run` is used to run the image. `--name` is used to specify the container name. `-p` is used to specify the port mapping. `-d` is used to detach the container so it doesn't block our terminal. `-e` is used to specify the environment variables. `<image-name>` is the name of the image.
+
+If we don't specify any port mapping, we won't be able to access the application running inside the container from the browser. We will get a `connection refused` error.
+
+#### Stopping a container
+
+To stop a container, we can use the following command:
+
+```bash
+docker stop <container-name>
+# docker stop my-container
+```
+
+Here `docker stop` is used to stop the container. `<container-name>` is the name of the container.
+
+#### Starting a container
+
+To start a container, we can use the following command:
+
+```bash
+docker start <container-name>
+# docker start my-container
+```
+
+Here `docker start` is used to start the container. `<container-name>` is the name of the container. This time we don't have to specify the port mapping, environment variables, etc. because we have already specified them while running the image.
+
+#### Listing the running containers
+
+To list all the running containers, we can use the following command:
+
+```bash
+docker ps
+```
+
+This will list all the running containers.
+
+#### Listing all the containers
+
+To list all the containers, we can use the following command:
+
+```bash
+docker ps -a
+```
+
+This will list all the containers.
