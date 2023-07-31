@@ -1,0 +1,22 @@
+{
+  "name": "docker-101",
+  "version": "1.0.0",
+  "description": "This is a beginner's guide to Docker. It is meant to be a quick reference for Docker commands and concepts. It is not meant to be a comprehensive guide to Docker. For more information, please refer to the [official documentation](https://docs.docker.com/).",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
