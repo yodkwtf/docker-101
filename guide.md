@@ -273,25 +273,71 @@ docker start <container-name>
 
 Here `docker start` is used to start the container. `<container-name>` is the name of the container. This time we don't have to specify the port mapping, environment variables, etc. because we have already specified them while running the image.
 
-#### Listing the running containers
+## Managing Images and Containers
 
-To list all the running containers, we can use the following command:
+Here are all the commands to manage images and containers.
+
+#### List all the images:
 
 ```bash
-docker ps
+docker images
 ```
 
-This will list all the running containers.
-
-#### Listing all the containers
-
-To list all the containers, we can use the following command:
+#### List all the containers:
 
 ```bash
 docker ps -a
 ```
 
-This will list all the containers.
+#### List all the running containers:
+
+```bash
+docker ps
+```
+
+#### Remove an image:
+
+```bash
+docker image rm <image-name>
+  # or
+docker rmi <image-name>
+```
+
+_Note: We can't remove an image if there's a container is created from it. We have to remove the container first._
+
+#### Remove an image forcefully (if there's a container created from it):
+
+```bash
+docker image rm -f <image-name>
+  # or
+docker rmi -f <image-name>
+```
+
+Now the alternate way to remove an image which has a container created from it is to remove the container first and then remove the image.
+
+#### Remove a container:
+
+```bash
+docker container rm <container-name>
+  # or
+docker rm <container-name>
+```
+
+#### Remove multiple containers:
+
+```bash
+docker container rm <container-name-1> <container-name-2> <container-name-3>
+  # or
+docker rm <container-name-1> <container-name-2> <container-name-3>
+```
+
+#### Remove all the images, containers, and volumes:
+
+```bash
+docker system prune -a
+```
+
+`-a` is used to remove all the images, containers, and volumes. if we don't specify `-a`, it will only remove the unused images, containers, and volumes.
 
 ## Layer Caching
 
@@ -344,3 +390,19 @@ COPY ./api ./app
 ```
 
 Now an image for the first 4 layers will be cached and can be reused again and again if there's no change in package.json. So if we make a change in the code, Docker will only rebuild the image from the 5th layer and not from the 1st layer.
+
+## Tagging Images
+
+We can create different versions of an image by using tags. By default, Docker will tag an image as `latest`. We can specify our own tag while building the image.
+
+```bash
+docker build -t <image-name>:<tag> .
+  # docker build -t my-image:1.0 .
+```
+
+Now if we want to run this image, we can use the following command:
+
+```bash
+docker run --name <container-name> -p <host-port>:<container-port> -d -e <environment-variables> <image-name>:<tag>
+  # docker run --name my-container -p 8000:5000 -d -e PORT=5000 my-image:1.0
+```
