@@ -292,3 +292,55 @@ docker ps -a
 ```
 
 This will list all the containers.
+
+## Layer Caching
+
+At every step of the Dockerfile, Docker creates a layer and at every layer it caches the images till that layer. So if we change something in the Dockerfile for step 4, Docker will only rebuild the image from step 4 and not from step 1. This is called layer caching.
+
+This happens because when image was built initially, it was saved after each layer. So the image up until the step 3 would already be saved. So when we change something in step 4, Docker will only rebuild the image from step 4 and not from step 1.
+
+This saves a lot of time while building the image.
+
+For example, let's say the initial steps were:
+
+```Dockerfile
+FROM node:17-alpine # cached till layer 1
+
+WORKDIR /app # images cached till layer 1 & 2
+
+COPY ./api . # images cached till layer 1, 2 & 3
+
+RUN npm install # images cached till layer 1, 2, 3 & 4
+```
+
+Here, each step will create a new layer in image and take some time. But now if we change something in step 3, Docker will only rebuild the image from step 3 and not from step 1. So the new steps will be:
+
+```Dockerfile
+FROM node:17-alpine
+
+WORKDIR /app # cached image (till layer 1 & 2) will be used
+
+COPY ./api ./app # changes will be made from here
+
+RUN npm install # reruns since layers are built on top of each other
+```
+
+So, Docker will the use cached image for the first 2 layers and then rebuild the image from the 3rd layer.
+
+#### Refactoring the Dockerfile
+
+In the above example, whenever we make a change in the code, Docker will rebuild the image from the 3rd layer and hence the `npm install` command will run again and again. This will take a lot of time. So we can refactor the Dockerfile to make the `npm install` command run only when the `package.json` file changes.
+
+```Dockerfile
+FROM node:17-alpine
+
+WORKDIR /app
+
+COPY ./api/package.json ./app/package.json # copy only package.json
+
+RUN npm install # run npm install
+
+COPY ./api ./app
+```
+
+Now an image for the first 4 layers will be cached and can be reused again and again if there's no change in package.json. So if we make a change in the code, Docker will only rebuild the image from the 5th layer and not from the 1st layer.
