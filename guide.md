@@ -273,6 +273,10 @@ docker start <container-name>
 
 Here `docker start` is used to start the container. `<container-name>` is the name of the container. This time we don't have to specify the port mapping, environment variables, etc. because we have already specified them while running the image.
 
+#### Difference between `docker run` and `docker start`
+
+`docker run` will always create a new container. So if we run the same image twice, it will create two containers. But `docker start` will start the container if it is stopped. So if we run the same image twice, it will create one container and start it. By default, `docker start` runs the container in detached mode.
+
 ## Managing Images and Containers
 
 Here are all the commands to manage images and containers.
@@ -303,7 +307,7 @@ docker image rm <image-name>
 docker rmi <image-name>
 ```
 
-_Note: We can't remove an image if there's a container is created from it. We have to remove the container first._
+_Note: We can't remove an image if there's a container created from it. We have to remove the container first._
 
 #### Remove an image forcefully (if there's a container created from it):
 
@@ -406,3 +410,66 @@ Now if we want to run this image, we can use the following command:
 docker run --name <container-name> -p <host-port>:<container-port> -d -e <environment-variables> <image-name>:<tag>
   # docker run --name my-container -p 8000:5000 -d -e PORT=5000 my-image:1.0
 ```
+
+## Volumes
+
+Volumes are a way to persist data in Docker. It allows us to map a folder on our local machine to a folder inside the container. So if we make any changes in the folder on our local machine, it will be reflected in the folder inside the container and vice versa.
+
+#### Why do we need volumes?
+
+Let's say we writing some code to create some APIs. We have a Dockerfile to build an image and run a container. We have a folder called `api` which contains all the code. We have a Dockerfile which looks like this:
+
+```Dockerfile
+FROM node:17-alpine
+
+WORKDIR /app
+
+COPY ./api/package.json ./app/package.json
+
+RUN npm install
+
+COPY ./api ./app
+
+CMD ["npm", "start"]
+```
+
+We build the image and run the container. Now we make some changes in the code and rebuild the image and run the container again. But this time, the container will have the old code because the container was created from the old image. So we have to remove the container and run the container again. This is not a good way to develop an application.
+
+So we can use volumes to map the `api` folder on our local machine to the `app` folder inside the container. So if we make any changes in the `api` folder on our local machine, it will be reflected in the `app` folder inside the container and vice versa.
+
+> Note: Volumes don't change the docker image. It only changes the container. So if we remove the container and run the container again, the changes will be lost. So we have to use volumes only for development purposes so that we don't make a new image and run a new container every time we make a change in the code.
+
+#### Using volumes
+
+We can use volumes by using the `-v` flag while running the container to map a folder on our local machine to a folder inside the container.
+
+```bash
+docker run --name <container-name> -p <host-port>:<container-port> -rm -v <local-folder-abs-path>:<container-folder-path> <image-name>
+  # docker run --name my-container -p 8000:5000 -v /Users/username/Desktop/api:/app my-image:1.0
+```
+
+- `-rm` - remove the container when it stops running
+- `-v` - map a folder on our local machine to a folder inside the container
+- `/Users/username/Desktop/api` - absolute path of the `api` folder on our local machine
+- `/app` - path of the `app` folder inside the container
+
+Now if we make any changes in the `api` folder on our local machine, it will be reflected in the `app` folder inside the container and vice versa.
+
+We can use something like `nodemon` to restart the server whenever we make a change in the code.
+
+**ISSUE** - Since the `/app` inside container is in sync with the `api` folder on our local machine, the `node_modules` folder inside the container will be deleted because we ignore it using `.dockerignore`. To solve this issue, we can use the following command:
+
+```bash
+docker run --name <container-name> -p <host-port>:<container-port> -rm -v <local-folder-abs-path>:<container-folder-path> -v /app/node_modules <image-name>
+  # docker run --name my-container -p 8000:5000 -v /Users/username/Desktop/api:/app -v /app/node_modules my-image:1.0
+```
+
+This is called **anonymous volume**. Here is how it works:
+
+- Since the path for the second volume is more specific, it will override the path for the first volume.
+- It doesn't map the `node_modules` folder to any specific directory like we did in the first volume.
+- Instead, it maps the `node_modules` folder to a folder managed by Docker itself on our local machine.
+- Contents of this folder will persist even if the container stops running.
+- Next time when we run the container, the `node_modules` folder will be still mapped to that folder managed by Docker itself.
+
+So basically, we used 2 volumes. One to map the `api` folder on our local machine to the `app` folder inside the container and another to map the `node_modules` folder inside the container to a folder managed by Docker itself on our local machine. Since the path for the second volume is more specific, it will override the path for the first volume.
