@@ -4,11 +4,11 @@ RUN npm install -g nodemon
 
 WORKDIR /app
 
-COPY ./api/package.json .
+COPY ./package.json .
 
 RUN npm install
 
-COPY ./api .
+COPY . .
 
 EXPOSE 5000
 

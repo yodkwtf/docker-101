@@ -473,3 +473,100 @@ This is called **anonymous volume**. Here is how it works:
 - Next time when we run the container, the `node_modules` folder will be still mapped to that folder managed by Docker itself.
 
 So basically, we used 2 volumes. One to map the `api` folder on our local machine to the `app` folder inside the container and another to map the `node_modules` folder inside the container to a folder managed by Docker itself on our local machine. Since the path for the second volume is more specific, it will override the path for the first volume.
+
+## Docker Compose
+
+Docker Compose is a tool for defining and running multi-container Docker applications. Let's say that we have different modules (database, API, frontend, etc.) in our application and each module has its own container and Dockerfile. So we have to build an image and run a container for each module.
+
+Docker Compose allows us to do that with a single command.
+
+#### docker-compose.yml
+
+It allows us to define all the container configurations of our project in a single file called `docker-compose.yml`. It may contain port mapping, volumes, container names, etc.
+
+### Creating a docker-compose.yml file
+
+We need to make it in the root directory where all of our different modules folders are present.
+
+#### Step 1: Specify the version of docker-compose you want to use
+
+```yml
+version: '3.8'
+```
+
+`version` is the version of docker-compose we want to use. We can find the latest version [here](https://docs.docker.com/compose/compose-file/compose-versioning/).
+
+#### Step 2: Define the services
+
+```yml
+services:
+  <service-name>: <service-config>
+```
+
+- `services` has multiple nested properties and values.
+- `service-name` represents the name of the service which will be one of the modules of our application.
+- `service-name` can be anything we want and it doesn't have to be the same as the name of the module.
+- since it is a yml file, we have to use indentation to define nested properties and values.
+- `service-config` is the configuration of the service which will be one of the modules of our application.
+
+#### Step 3: Define the configuration of the service
+
+```yml
+services:
+  api:
+    build: ./api
+    container_name: api_container
+    ports:
+      - '8000':'5000'
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+```
+
+- `build` - path to the folder which contains the Dockerfile for the service
+- `container_name` - name of the container
+- `ports` - port mapping
+- `volumes` - volumes (can be multiple) now only need the relative path from the directory where the `docker-compose.yml` file is present to the directory which we want to map to the container
+
+The idea is to define the configuration of each module in the `docker-compose.yml` file. So the containers for each of the module can be run with a single command.
+
+### Running the containers
+
+Move to the directory where the `docker-compose.yml` file is present. Then we can run the containers for all the modules with a single command:
+
+```bash
+docker-compose up
+```
+
+Now the **docker-compose** file will be run to do the following things:
+
+- Looks at the services once by one and reads the dockerfile for each service.
+- Builds the image for each service with the configurations defined in the `Dockerfile` file.
+- Runs the container for each service with the configurations defined in the `docker-compose.yml` file.
+
+### Stopping the containers
+
+We can stop the containers for all the modules with a single command:
+
+```bash
+docker-compose down
+```
+
+Now the **docker-compose** file will be run to do the following things:
+
+- Stops the containers for each service.
+- Removes the containers for each service.
+
+> Note that this won't remove the images and volume for each service.
+
+To remove the images, we can use the following command:
+
+```bash
+docker-compose down --rmi all
+```
+
+Now to remove both images and volumes, we can use the following command:
+
+```bash
+docker-compose down --rmi all -v
+```

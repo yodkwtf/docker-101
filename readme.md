@@ -64,3 +64,4 @@ Contributions to this repository are welcome! If you find issues or want to add 
 ## ToDo's
 
 - [ ] Read more about volumes
+- [ ] Why port mapping is a list in docker-compose
