@@ -570,3 +570,67 @@ Now to remove both images and volumes, we can use the following command:
 ```bash
 docker-compose down --rmi all -v
 ```
+
+## Dockerising a React App
+
+We can use the following steps to dockerise a React App.
+
+#### Step 1: Create a React App
+
+```bash
+npx create-react-app frontend
+```
+
+#### Step 2: Create a Dockerfile
+
+```Dockerfile
+FROM node:17-alpine
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
+```
+
+#### Step 3: Configure docker-compose.yml file
+
+```yml
+version: '3.8'
+services:
+  api:
+    build: ./api
+    container_name: api_container
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+  frontend:
+    build: ./frontend
+    container_name: react-app_container
+    ports:
+      - '3000:3000'
+      - ./frontend:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
+```
+
+Here we have 2 services - `api` and `frontend`. The `api` service is the same as the one we created earlier. The `frontend` service is the one we just created.
+
+Since we are using `stdin_open` and `tty` for the `frontend` service, we can run the container for the `frontend` service in the interactive mode which will allow us to see the logs in the terminal. It's always recommended to run a react app in the interactive mode.
+
+#### Step 4: Run the containers
+
+```bash
+docker-compose up
+```
+
+Now we can see the react app running on `localhost:3000` and the API running on `localhost:5000`. Both of them are running in independently of each other their own containers.
