@@ -634,3 +634,41 @@ docker-compose up
 ```
 
 Now we can see the react app running on `localhost:3000` and the API running on `localhost:5000`. Both of them are running in independently of each other their own containers.
+
+## Sharing Images on Docker Hub
+
+We can share our images on Docker Hub so that other people can use them. We can do that with the following steps:
+
+#### Step 1: Create a Docker Hub account
+
+We can create a Docker Hub account [here](https://hub.docker.com/signup).
+
+#### Step 2: Login to Docker Hub
+
+Once we have created a Docker Hub account, we can login to Docker Hub with the following command:
+
+```bash
+docker login
+```
+
+#### Step 3: Tag the image
+
+```bash
+docker tag <image-name> <docker-hub-username>/<image-name>:<tag>
+```
+
+- `image-name` is the name of the image we want to tag.
+
+- `docker-hub-username` is the username of our Docker Hub account.
+
+- `tag` is the tag we want to give to the image.
+
+#### Step 4: Push the image
+
+```bash
+docker push <docker-hub-username>/<image-name>:<tag>
+```
+
+Now the image will be pushed to Docker Hub.
+
+This is the CLI way of pushing the image to Docker Hub. We can also do it from the Docker Hub website by creating a repository and then pushing the image to that repository.
